@@ -29,11 +29,9 @@
               // the maps look like this: { file: FileObject, response: JSONServerResponse }
               alert( "All complete!" ) ;
             },
-            params: {
-              'csrf_token': '{{ csrf_token }}',
-              'csrf_name': 'csrfmiddlewaretoken',
-              'csrf_xname': 'X-CSRFToken',
-            },
+            customHeaders: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
           }) ;
     });
     </script>
