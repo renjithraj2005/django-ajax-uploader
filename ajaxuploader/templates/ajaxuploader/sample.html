@@ -16,6 +16,7 @@
         var uploader = new qq.FileUploader( {
             action: "{% url my_ajax_upload %}",
             element: $('#file-uploader')[0],
+            encoding: "multipart",
             multiple: true,
             onComplete: function( id, fileName, responseJSON ) {
               if( responseJSON.success )

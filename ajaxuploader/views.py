@@ -16,32 +16,18 @@ class AjaxFileUploader(object):
 
     def _ajax_upload(self, request):
         if request.method == "POST":
-            if request.is_ajax():
-                # the file is stored raw in the request
-                upload = request
-                is_raw = True
-                # AJAX Upload will pass the filename in the querystring if it
-                # is the "advanced" ajax upload
-                try:
-                    filename = request.GET['qqfile']
-                except KeyError:
-                    return HttpResponseBadRequest("AJAX request not valid")
-            # not an ajax upload, so it was the "basic" iframe version with
-            # submission via form
+            if len(request.FILES) == 1:
+                # FILES is a dictionary in Django but Ajax Upload gives
+                # the uploaded file an ID based on a random number, so it
+                # cannot be guessed here in the code. Rather than editing
+                # Ajax Upload to pass the ID in the querystring, observe
+                # that each upload is a separate request, so FILES should
+                # only have one entry. Thus, we can just grab the first
+                # (and only) value in the dict.
+                upload = request.FILES.values()[0]
             else:
-                is_raw = False
-                if len(request.FILES) == 1:
-                    # FILES is a dictionary in Django but Ajax Upload gives
-                    # the uploaded file an ID based on a random number, so it
-                    # cannot be guessed here in the code. Rather than editing
-                    # Ajax Upload to pass the ID in the querystring, observe
-                    # that each upload is a separate request, so FILES should
-                    # only have one entry. Thus, we can just grab the first
-                    # (and only) value in the dict.
-                    upload = request.FILES.values()[0]
-                else:
-                    raise Http404("Bad Upload")
-                filename = upload.name
+                raise Http404("Bad Upload")
+            filename = upload.name
 
             backend = self.get_backend()
 
@@ -50,7 +36,7 @@ class AjaxFileUploader(object):
                         or filename)
             # save the file
             backend.setup(filename)
-            success = backend.upload(upload, filename, is_raw)
+            success = backend.upload(upload, filename)
             # callback
             extra_context = backend.upload_complete(request, filename)
 
